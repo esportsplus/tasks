@@ -14,6 +14,6 @@
         "prepare": "npm run build",
         "prepublishOnly": "npm run build"
     },
-    "types": "./build/index.d.ts",
+    "types": "./build/types.d.ts",
     "version": "0.0.4"
 }
