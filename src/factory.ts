@@ -19,6 +19,8 @@ class Scheduler {
     add(fn: Fn) {
         this.stack.push(fn);
         this.schedule();
+
+        return this;
     }
 
     async run() {
@@ -50,6 +52,8 @@ class Scheduler {
 
         this.queue();
         this.scheduled = true;
+
+        return this;
     }
 
     throttle(limit: number, interval: number, evenly: boolean = false) {
@@ -59,6 +63,8 @@ class Scheduler {
         }
 
         this.throttled = { interval, limit };
+
+        return this;
     }
 
     worker(fn: Fn) {
