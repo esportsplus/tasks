@@ -21,8 +21,10 @@
     "types": "./build/index.d.ts",
     "typesVersions": {
         "*": {
-            "types": ["build/types"]
+            "types": [
+                "build/types"
+            ]
         }
     },
-    "version": "0.0.7"
+    "version": "0.0.8"
 }
