@@ -46,3 +46,4 @@ class System {
 
 
 export default () => new System();
+export { System };
