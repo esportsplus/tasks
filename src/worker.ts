@@ -1,7 +1,7 @@
 import { Fn } from './types';
 
 
-class System {
+class Worker {
     running: boolean = false;
     scheduled: boolean = false;
     schedulers = new Set<{ add: (fn: Fn) => void }>;
@@ -25,7 +25,7 @@ class System {
         }
 
         if (!this.schedulers.size) {
-            throw new Error('A minimum of 1 scheduler is required to run system workers');
+            throw new Error('A minimum of 1 scheduler is required to run a worker');
         }
 
         this.scheduled = true;
@@ -45,5 +45,5 @@ class System {
 }
 
 
-export default () => new System();
-export { System };
+export default () => new Worker();
+export { Worker };

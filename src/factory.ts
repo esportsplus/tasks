@@ -7,7 +7,6 @@ class Scheduler {
     private scheduled: boolean = false;
     private stack: Fn[] = [];
     private throttled: Throttled;
-    private workers = new Set<Fn>;
 
 
     // Microtask throws error when queue is set as scheduler property
@@ -35,10 +34,6 @@ class Scheduler {
             }
 
             this.stack.splice(0, n);
-
-            for (let worker of this.workers) {
-                await worker();
-            }
         }
 
         this.scheduled = false;
@@ -65,12 +60,6 @@ class Scheduler {
         this.throttled = { interval, limit };
 
         return this;
-    }
-
-    worker(fn: Fn) {
-        this.workers.add(fn);
-
-        return () => this.workers.delete(fn);
     }
 }
 

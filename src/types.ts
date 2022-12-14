@@ -1,5 +1,5 @@
 import { Scheduler } from "./factory";
-import { System } from './system';
+import { Worker } from './worker';
 
 
 type Fn = () => Promise<unknown> | unknown;
@@ -12,4 +12,4 @@ type Throttled = {
 } | undefined;
 
 
-export { Fn, Queue, Scheduler, System, Throttled };
+export { Fn, Queue, Scheduler, Throttled, Worker };
