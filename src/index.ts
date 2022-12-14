@@ -1,7 +1,7 @@
-import manager from './manager';
 import raf from './raf';
+import system from './system';
 import task from './task';
 
 
-export default { manager, raf, task };
-export { manager, raf, task };
+export default { raf, system, task };
+export { raf, system, task };

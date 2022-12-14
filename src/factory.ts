@@ -7,12 +7,12 @@ class Scheduler {
     private scheduled: boolean = false;
     private stack: Fn[] = [];
     private throttled: Throttled;
-    private workers: Set<Fn> = new Set;
+    private workers = new Set<Fn>;
 
 
     // Microtask throws error when queue is set as scheduler property
     constructor(queue: Queue) {
-        this.queue = () => queue(async () => await this.run());
+        this.queue = () => queue(this.run);
     }
 
 
