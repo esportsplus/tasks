@@ -2,16 +2,15 @@ import { Fn, Queue, Throttled } from './types';
 
 
 class Scheduler {
-    private queue: VoidFunction;
-    private lastRun = 0;
+    private last = 0;
+    private queue: Queue;
     private scheduled: boolean = false;
     private stack: Fn[] = [];
     private throttled: Throttled;
 
 
-    // Microtask throws error when queue is set as scheduler property
-    constructor(queue: Queue) {
-        this.queue = () => queue(this.run);
+    constructor(queue: Scheduler['queue']) {
+        this.queue = queue;
     }
 
 
@@ -22,12 +21,12 @@ class Scheduler {
         return this;
     }
 
-    async run() {
+    private async run() {
         let n = this?.throttled?.limit || this.stack.length,
             now = Date.now();
 
-        if (!this.throttled || (now - this.lastRun) > this.throttled.interval) {
-            this.lastRun = now;
+        if (!this.throttled || (now - this.last) > this.throttled.interval) {
+            this.last = now;
 
             for (let i = 0; i < n; i++) {
                 await this.stack[i]();
@@ -45,7 +44,7 @@ class Scheduler {
             return;
         }
 
-        this.queue();
+        this.queue(async () => await this.run());
         this.scheduled = true;
 
         return this;
@@ -64,5 +63,5 @@ class Scheduler {
 }
 
 
-export default (queue: Queue) => new Scheduler(queue);
+export default (queue: Scheduler['queue']) => new Scheduler(queue);
 export { Scheduler };

@@ -2,8 +2,4 @@ import { Fn } from './types';
 import factory from './factory';
 
 
-export default () => factory(
-    window.requestAnimationFrame || function (fn: Fn) {
-        return window.setTimeout(fn, (1000 / 60));
-    }
-);
+export default () => factory( self.requestAnimationFrame.bind(self) || ((fn: Fn) => self.setTimeout(fn, (1000 / 60))) );

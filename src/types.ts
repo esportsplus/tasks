@@ -4,7 +4,7 @@ import { Worker } from './worker';
 
 type Fn = () => Promise<unknown> | unknown;
 
-type Queue = (fn: VoidFunction) => Promise<unknown> | unknown;
+type Queue = (fn: Fn) => Promise<unknown> | unknown;
 
 type Throttled = {
     interval: number;
