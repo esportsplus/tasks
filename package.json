@@ -9,7 +9,7 @@
     "name": "@esportsplus/tasks",
     "private": false,
     "scripts": {
-        "build": "tsc && tsc-alias",
+        "build": "webpack",
         "-": "-",
         "prepare": "npm run build",
         "prepublishOnly": "npm run build"
