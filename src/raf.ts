@@ -3,5 +3,5 @@ import factory from './factory';
 
 
 export default () => factory(
-    window?.requestAnimationFrame.bind(window) || ((fn: Fn) => setTimeout(fn, (1000 / 60)))
+    globalThis?.requestAnimationFrame.bind(globalThis) || ((fn: Fn) => setTimeout(fn, (1000 / 60)))
 );
