@@ -1,4 +1,11 @@
 import factory from './factory';
 
 
-export default () => factory( self.queueMicrotask.bind(self) || Promise.resolve().then );
+let queue: any = Promise.resolve().then;
+
+if (self && self?.queueMicrotask) {
+    queue = self.queueMicrotask.bind(self);
+}
+
+
+export default () => factory(queue as Parameters<typeof factory>[0]);
