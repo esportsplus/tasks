@@ -1,6 +1,7 @@
 import factory from './factory';
+import global from './global';
 
 
 export default () => factory(
-    globalThis?.queueMicrotask.bind(globalThis) || Promise.resolve().then
+    global?.queueMicrotask.bind(global) || Promise.resolve().then
 );
