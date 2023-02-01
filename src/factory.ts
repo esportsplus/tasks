@@ -2,7 +2,7 @@ class Scheduler {
     private last = 0;
     private queue: (task: Scheduler['stack'][0]) => Promise<unknown> | unknown;
     private scheduled = false;
-    private stack: (() => Promise<unknown> | unknown)[] = [];
+    private stack: VoidFunction[] = [];
     private throttled: {
         interval: number;
         limit: number;
@@ -14,11 +14,11 @@ class Scheduler {
     }
 
 
-    add(task: Scheduler['stack'][0]) {
-        return new Promise((resolve, reject) => {
+    add<T>(task: () => Promise<T> | T) {
+        return new Promise< Awaited< ReturnType<typeof task> > >((resolve, reject) => {
             this.stack.push(async () => {
                 try {
-                    resolve(await task);
+                    resolve( await task() );
                 }
                 catch {
                     reject();
