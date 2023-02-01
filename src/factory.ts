@@ -1,12 +1,12 @@
-import { Fn, Queue, Throttled } from './types';
-
-
 class Scheduler {
     private last = 0;
-    private queue: Queue;
-    private scheduled: boolean = false;
-    private stack: Fn[] = [];
-    private throttled: Throttled;
+    private queue: (task: Scheduler['stack'][0]) => Promise<unknown> | unknown;
+    private scheduled = false;
+    private stack: (() => Promise<unknown> | unknown)[] = [];
+    private throttled: {
+        interval: number;
+        limit: number;
+    } | undefined;
 
 
     constructor(queue: Scheduler['queue']) {
@@ -14,11 +14,18 @@ class Scheduler {
     }
 
 
-    add(fn: Fn) {
-        this.stack.push(fn);
-        this.schedule();
-
-        return this;
+    add(task: Scheduler['stack'][0]) {
+        return new Promise((resolve, reject) => {
+            this.stack.push(async () => {
+                try {
+                    resolve(await task);
+                }
+                catch {
+                    reject();
+                }
+            });
+            this.schedule();
+        });
     }
 
     private async run() {
@@ -50,13 +57,11 @@ class Scheduler {
         return this;
     }
 
-    throttle(limit: number, interval: number, evenly: boolean = false) {
-        if (evenly) {
-            interval = interval / limit;
-            limit = 1;
-        }
-
-        this.throttled = { interval, limit };
+    throttle(limit: number, ms: number) {
+        this.throttled = {
+            interval: ms / limit,
+            limit: 1
+        };
 
         return this;
     }

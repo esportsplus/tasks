@@ -1,11 +1,12 @@
-import { Fn } from './types';
+
+import { Scheduler } from './factory';
 
 
 class Worker {
-    running: boolean = false;
-    scheduled: boolean = false;
-    schedulers = new Set<{ add: (fn: Fn) => void }>;
-    tasks = new Set<Fn>;
+    running = false;
+    scheduled = false;
+    schedulers = new Set<{ add: Scheduler['add'] }>;
+    tasks = new Set< Scheduler['stack'][0] >;
 
 
     async run() {
