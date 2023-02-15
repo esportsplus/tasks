@@ -20,8 +20,8 @@ class Scheduler {
                 try {
                     resolve( await task() );
                 }
-                catch {
-                    reject();
+                catch (e) {
+                    reject(e);
                 }
             });
             this.schedule();
