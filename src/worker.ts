@@ -12,9 +12,13 @@ class Worker {
     async run() {
         this.running = true;
 
+        let stack: Promise<void>[] = [];
+
         for (let task of this.tasks) {
-            await task();
+            stack.push( task() );
         }
+
+        await Promise.allSettled(stack);
 
         this.running = false;
     }

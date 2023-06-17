@@ -2,7 +2,7 @@ class Scheduler {
     private last = 0;
     private queue: (task: Scheduler['stack'][0]) => Promise<unknown> | unknown;
     private scheduled = false;
-    private stack: VoidFunction[] = [];
+    private stack: (() => Promise<void>)[] = [];
     private throttled: {
         interval: number;
         limit: number;
