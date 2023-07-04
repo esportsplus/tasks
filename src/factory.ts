@@ -40,9 +40,7 @@ class Scheduler {
 
         this.state = RUNNING;
 
-        let now = Date.now();
-
-        if ((this.throttled?.interval || 0) <= (now - this.lastRunAt)) {
+        if ((this.throttled?.interval || 0) <= (Date.now() - this.lastRunAt)) {
             let n = this.throttled?.limit || this.stack.length;
 
             for (let i = 0; i < n; i++) {
@@ -58,7 +56,7 @@ class Scheduler {
                 await Promise.allSettled( this.stack.splice(0, n) );
             }
 
-            this.lastRunAt = now;
+            this.lastRunAt = Date.now();
         }
 
         this.state = READY;
