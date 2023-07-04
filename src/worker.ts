@@ -1,16 +1,27 @@
 
 import { Scheduler } from './factory';
+import { READY, RUNNING, SCHEDULED } from './symbols';
 
 
 class Worker {
-    running = false;
-    scheduled = false;
+    private state = READY;
+    private task: () => Promise<void>;
+
     schedulers = new Set<{ add: Scheduler['add'] }>;
     tasks = new Set< Scheduler['stack'][0] >;
 
 
-    async run() {
-        this.running = true;
+    constructor() {
+        this.task = () => this.run();
+    }
+
+
+    private async run() {
+        if (this.state === RUNNING) {
+            return;
+        }
+
+        this.state = RUNNING;
 
         let stack: Promise<void>[] = [];
 
@@ -20,32 +31,25 @@ class Worker {
 
         await Promise.allSettled(stack);
 
-        this.running = false;
+        this.state = READY;
     }
 
-
     schedule() {
-        if (this.scheduled) {
-            return;
+        if (this.state !== READY || !this.tasks.size) {
+            return this;
         }
 
         if (!this.schedulers.size) {
             throw new Error('A minimum of 1 scheduler is required to run a worker');
         }
 
-        this.scheduled = true;
+        this.state = SCHEDULED;
 
         for (let scheduler of this.schedulers) {
-            scheduler.add(async () => {
-                if (this.running) {
-                    return;
-                }
-
-                await this.run();
-
-                this.scheduled = false;
-            });
+            scheduler.add(this.task);
         }
+
+        return this;
     }
 }
 

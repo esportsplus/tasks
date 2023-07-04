@@ -1,16 +1,21 @@
+import { READY, RUNNING, SCHEDULED } from './symbols';
+
+
 class Scheduler {
-    private last = 0;
-    private queue: (task: Scheduler['stack'][0]) => Promise<unknown> | unknown;
-    private scheduled = false;
+    private lastRunAt = 0;
+    private queue: ((task: Scheduler['stack'][0]) => Promise<unknown> | unknown);
     private stack: (() => Promise<void>)[] = [];
+    private state = READY;
+    private task: () => Promise<void>;
     private throttled: {
         interval: number;
         limit: number;
-    } | undefined;
+    } | null = null;
 
 
     constructor(queue: Scheduler['queue']) {
         this.queue = queue;
+        this.task = () => this.run();
     }
 
 
@@ -29,30 +34,44 @@ class Scheduler {
     }
 
     private async run() {
-        let n = this?.throttled?.limit || this.stack.length,
-            now = Date.now();
-
-        if (!this.throttled || (now - this.last) > this.throttled.interval) {
-            this.last = now;
-
-            for (let i = 0; i < n; i++) {
-                await this.stack[i]();
-            }
-
-            this.stack.splice(0, n);
+        if (this.state === RUNNING) {
+            return;
         }
 
-        this.scheduled = false;
+        this.state = RUNNING;
+
+        let now = Date.now();
+
+        if ((this.throttled?.interval || 0) <= (now - this.lastRunAt)) {
+            let n = this.throttled?.limit || this.stack.length;
+
+            for (let i = 0; i < n; i++) {
+                // @ts-ignore
+                this.stack[i] = this.stack[i]();
+            }
+
+            if (this.stack.length === n) {
+                await Promise.allSettled( this.stack );
+                this.stack.length = 0;
+            }
+            else {
+                await Promise.allSettled( this.stack.splice(0, n) );
+            }
+
+            this.lastRunAt = now;
+        }
+
+        this.state = READY;
         this.schedule();
     }
 
     schedule() {
-        if (this.scheduled || !this.stack.length) {
-            return;
+        if (this.state !== READY || !this.stack.length) {
+            return this;
         }
 
-        this.queue(async () => await this.run());
-        this.scheduled = true;
+        this.state = SCHEDULED;
+        this.queue(this.task);
 
         return this;
     }
@@ -68,5 +87,5 @@ class Scheduler {
 }
 
 
-export default (queue: Scheduler['queue']) => new Scheduler(queue);
+export default (queue: ConstructorParameters< typeof Scheduler >[0]) => new Scheduler(queue);
 export { Scheduler };

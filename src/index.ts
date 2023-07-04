@@ -2,17 +2,20 @@ import factory from './factory';
 import worker from './worker';
 
 
-let global = globalThis;
+let { queueMicrotask, requestAnimationFrame } = globalThis;
 
 
 const raf = () => factory(
-    global?.requestAnimationFrame.bind(global) || ((fn) => setTimeout(fn, (1000 / 60)))
+    requestAnimationFrame
+        ? (fn) => requestAnimationFrame.call(global, fn)
+        : (fn) => setTimeout(fn, (1000 / 60))
 );
 
 const task = () => factory(
-    global?.queueMicrotask.bind(global) || Promise.resolve().then
-);;
+    queueMicrotask
+        ? (fn) => queueMicrotask.call(global, fn)
+        : Promise.resolve().then
+);
 
 
-export default { raf, task, worker };
 export { raf, task, worker };
