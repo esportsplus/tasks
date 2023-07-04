@@ -19,20 +19,6 @@ class Scheduler {
     }
 
 
-    add<T>(task: () => Promise<T> | T) {
-        return new Promise< Awaited< ReturnType<typeof task> > >((resolve, reject) => {
-            this.stack.push(async () => {
-                try {
-                    resolve( await task() );
-                }
-                catch (e) {
-                    reject(e);
-                }
-            });
-            this.schedule();
-        });
-    }
-
     private async run() {
         if (this.state === RUNNING) {
             return;
@@ -61,6 +47,21 @@ class Scheduler {
 
         this.state = READY;
         this.schedule();
+    }
+
+
+    add<T>(task: () => Promise<T> | T) {
+        return new Promise< Awaited< ReturnType<typeof task> > >((resolve, reject) => {
+            this.stack.push(async () => {
+                try {
+                    resolve( await task() );
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+            this.schedule();
+        });
     }
 
     schedule() {
