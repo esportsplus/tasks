@@ -1,17 +1,21 @@
-import factory, { Scheduler } from './factory';
+import factory from './factory';
 
 
 let global = globalThis;
 
 
 const immediate = () => {
-    let { port1, port2 } = new MessageChannel();
+    let { port1, port2 } = new MessageChannel(),
+        registered = false;
 
-    port1.onmessage = async ({ data: task }: { data: Scheduler['task'] }) => {
-        await task();
-    };
+    return factory((task) => {
+        if (!registered) {
+            port1.onmessage = task;
+            registered = true;
+        }
 
-    return factory( (fn) => port2.postMessage(fn) );
+        port2.postMessage(null);
+    });
 };
 
 const micro = () => factory(
