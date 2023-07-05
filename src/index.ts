@@ -38,3 +38,4 @@ const raf = () => factory(
 
 
 export default { immediate, micro, raf };
+export { immediate, micro, raf };
