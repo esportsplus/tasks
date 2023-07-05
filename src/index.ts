@@ -8,8 +8,19 @@ const immediate = () => {
     let { port1, port2 } = new MessageChannel();
 
     return factory(
-        () => port2.postMessage(null),
-        (task) => port1.onmessage = task
+        (task) => {
+            if (port1.onmessage !== task) {
+                port1.onmessage = task;
+            }
+
+            port2.postMessage(null);
+
+            // For some reason a MessageChannel package would
+            // unset after running; If this experiences
+            // any problems uncomment.
+
+            // port1.onmessage = null;
+        }
     );
 };
 

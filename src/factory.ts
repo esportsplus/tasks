@@ -4,7 +4,7 @@ import { READY, RUNNING, SCHEDULED } from './symbols';
 class Scheduler {
     private lastRunAt = 0;
     private queue: ((task: Scheduler['task']) => Promise<unknown> | unknown);
-    private stack: (Scheduler['task'])[] = [];
+    private stack: (() => Promise<unknown> | unknown)[] = [];
     private state = READY;
     private task: () => Promise<void>;
     private throttled: {
@@ -13,13 +13,9 @@ class Scheduler {
     } | null = null;
 
 
-    constructor(queue: Scheduler['queue'], register?: (task: Scheduler['task']) => void) {
+    constructor(queue: Scheduler['queue']) {
         this.queue = queue;
         this.task = () => this.run();
-
-        if (register) {
-            register(this.task);
-        }
     }
 
 
@@ -34,8 +30,11 @@ class Scheduler {
             let n = this.throttled?.limit || this.stack.length;
 
             for (let i = 0; i < n; i++) {
-                // @ts-ignore
-                this.stack[i] = this.stack[i]();
+                try {
+                    // @ts-ignore
+                    this.stack[i] = this.stack[i]();
+                }
+                catch {}
             }
 
             if (this.stack.length === n) {
@@ -55,17 +54,10 @@ class Scheduler {
 
 
     add<T>(task: () => Promise<T> | T) {
-        return new Promise< Awaited< ReturnType<typeof task> > >((resolve, reject) => {
-            this.stack.push(async () => {
-                try {
-                    resolve( await task() );
-                }
-                catch (e) {
-                    reject(e);
-                }
-            });
-            this.schedule();
-        });
+        this.stack.push(task);
+        this.schedule();
+
+        return this;
     }
 
     schedule() {
