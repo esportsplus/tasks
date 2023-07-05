@@ -1,21 +1,30 @@
-import factory from './factory';
-import worker from './worker';
+import factory, { Scheduler } from './factory';
 
 
-let { queueMicrotask, requestAnimationFrame } = globalThis;
+let global = globalThis;
 
 
-const raf = () => factory(
-    requestAnimationFrame
-        ? (fn) => requestAnimationFrame.call(global, fn)
-        : (fn) => setTimeout(fn, (1000 / 60))
-);
+const immediate = () => {
+    let { port1, port2 } = new MessageChannel();
 
-const task = () => factory(
-    queueMicrotask
-        ? (fn) => queueMicrotask.call(global, fn)
+    port1.onmessage = async ({ data: task }: { data: Scheduler['task'] }) => {
+        await task();
+    };
+
+    return factory( (fn) => port2.postMessage(fn) );
+};
+
+const micro = () => factory(
+    global?.queueMicrotask
+        ? (fn) => global?.queueMicrotask.call(global, fn)
         : Promise.resolve().then
 );
 
+const raf = () => factory(
+    global?.requestAnimationFrame
+        ? (fn) => global?.requestAnimationFrame.call(global, fn)
+        : (fn) => setTimeout(fn, (1000 / 60))
+);
 
-export { raf, task, worker };
+
+export default { immediate, micro, raf };
