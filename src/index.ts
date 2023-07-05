@@ -5,29 +5,24 @@ let global = globalThis;
 
 
 const immediate = () => {
-    let { port1, port2 } = new MessageChannel(),
-        registered = false;
+    let { port1, port2 } = new MessageChannel();
 
-    return factory((task) => {
-        if (!registered) {
-            port1.onmessage = task;
-            registered = true;
-        }
-
-        port2.postMessage(null);
-    });
+    return factory(
+        () => port2.postMessage(null),
+        (task) => port1.onmessage = task
+    );
 };
 
 const micro = () => factory(
     global?.queueMicrotask
-        ? (fn) => global?.queueMicrotask.call(global, fn)
+        ? (task) => global?.queueMicrotask.call(global, task)
         : Promise.resolve().then
 );
 
 const raf = () => factory(
     global?.requestAnimationFrame
-        ? (fn) => global?.requestAnimationFrame.call(global, fn)
-        : (fn) => setTimeout(fn, (1000 / 60))
+        ? (task) => global?.requestAnimationFrame.call(global, task)
+        : (task) => setTimeout(task, (1000 / 60))
 );
 
 

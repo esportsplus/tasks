@@ -3,8 +3,8 @@ import { READY, RUNNING, SCHEDULED } from './symbols';
 
 class Scheduler {
     private lastRunAt = 0;
-    private queue: ((task: Scheduler['stack'][0]) => Promise<unknown> | unknown);
-    private stack: (() => Promise<void>)[] = [];
+    private queue: ((task: Scheduler['task']) => Promise<unknown> | unknown);
+    private stack: (Scheduler['task'])[] = [];
     private state = READY;
     private task: () => Promise<void>;
     private throttled: {
@@ -13,9 +13,13 @@ class Scheduler {
     } | null = null;
 
 
-    constructor(queue: Scheduler['queue']) {
+    constructor(queue: Scheduler['queue'], register?: (task: Scheduler['task']) => void) {
         this.queue = queue;
         this.task = () => this.run();
+
+        if (register) {
+            register(this.task);
+        }
     }
 
 
@@ -86,5 +90,5 @@ class Scheduler {
 }
 
 
-export default (queue: ConstructorParameters< typeof Scheduler >[0]) => new Scheduler(queue);
+export default (...args: ConstructorParameters< typeof Scheduler >) => new Scheduler(...args);
 export { Scheduler };
