@@ -1,4 +1,4 @@
-import { READY, RUNNING, SCHEDULED } from './symbols';
+import { READY, RUNNING, SCHEDULED } from './constants';
 
 
 class Scheduler {
