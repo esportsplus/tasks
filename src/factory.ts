@@ -37,13 +37,7 @@ class Scheduler {
                 catch {}
             }
 
-            if (this.stack.length === n) {
-                await Promise.allSettled( this.stack );
-                this.stack.length = 0;
-            }
-            else {
-                await Promise.allSettled( this.stack.splice(0, n) );
-            }
+            await Promise.allSettled( this.stack.splice(0, n) );
 
             this.lastRunAt = Date.now();
         }
