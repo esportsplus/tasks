@@ -14,5 +14,8 @@
     },
     "type": "module",
     "types": "build/index.d.ts",
-    "version": "0.1.11"
+    "version": "0.1.11",
+    "dependencies": {
+        "@esportsplus/queue": "^0.0.1"
+    }
 }

@@ -1,10 +1,11 @@
 import { READY, RUNNING, SCHEDULED } from './constants';
+import queue from '@esportsplus/queue';
 
 
 class Scheduler {
     private lastRunAt = 0;
-    private queue: ((task: Scheduler['task']) => Promise<unknown> | unknown);
-    private stack: (() => Promise<unknown> | unknown)[] = [];
+    private queue = queue<VoidFunction>();
+    private scheduler: ((task: Scheduler['task']) => Promise<unknown> | unknown);
     private state = READY;
     private task: () => Promise<void>;
     private throttled: {
@@ -13,8 +14,8 @@ class Scheduler {
     } | null = null;
 
 
-    constructor(queue: Scheduler['queue']) {
-        this.queue = queue;
+    constructor(scheduler: Scheduler['scheduler']) {
+        this.scheduler = scheduler;
         this.task = () => this.run();
     }
 
@@ -27,17 +28,14 @@ class Scheduler {
         this.state = RUNNING;
 
         if ((this.throttled?.interval || 0) <= (Date.now() - this.lastRunAt)) {
-            let n = this.throttled?.limit || this.stack.length;
+            let n = this.throttled?.limit || this.queue.length;
 
             for (let i = 0; i < n; i++) {
                 try {
-                    // @ts-ignore
-                    this.stack[i] = this.stack[i]();
+                    this.queue.next()?.();
                 }
                 catch {}
             }
-
-            await Promise.allSettled( this.stack.splice(0, n) );
 
             this.lastRunAt = Date.now();
         }
@@ -47,20 +45,20 @@ class Scheduler {
     }
 
 
-    add<T>(task: () => Promise<T> | T) {
-        this.stack.push(task);
+    add(task: VoidFunction) {
+        this.queue.add(task);
         this.schedule();
 
         return this;
     }
 
     schedule() {
-        if (this.state !== READY || !this.stack.length) {
+        if (this.state !== READY || !this.queue.length) {
             return this;
         }
 
         this.state = SCHEDULED;
-        this.queue(this.task);
+        this.scheduler(this.task);
 
         return this;
     }
