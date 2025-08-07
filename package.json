@@ -16,6 +16,6 @@
     "types": "build/index.d.ts",
     "version": "0.2.0",
     "dependencies": {
-        "@esportsplus/queue": "^0.0.1"
+        "@esportsplus/queue": "^0.1.0"
     }
 }
